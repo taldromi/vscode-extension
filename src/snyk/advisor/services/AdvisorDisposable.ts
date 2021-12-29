@@ -2,7 +2,7 @@ import { Subscription } from 'rxjs';
 import { IVSCodeLanguages } from '../../common/vscode/languages';
 import { getModules, getSupportedLanguage, isValidModuleName } from '../../common/vscode/parsing';
 import { ThemeColorAdapter } from '../../common/vscode/theme';
-import { Disposable, TextDocument } from '../../common/vscode/types';
+import { Disposable, Language, TextDocument } from '../../common/vscode/types';
 import { IVSCodeWindow } from '../../common/vscode/window';
 import { ModuleVulnerabilityCountProvider } from '../../snykOss/services/vulnerabilityCount/vulnerabilityCountProvider';
 import EditorDecorator from '../editor/EditorDecorator';
@@ -44,10 +44,9 @@ export class AdvisorScoreDisposable implements Disposable {
 
     const { fileName, languageId } = document;
     const supportedLanguage = getSupportedLanguage(fileName, languageId);
-    // TODO: check ->
-    // if (supportedLanguage === null || !this.shouldProcessFile(fileName, supportedLanguage)) {
-    //   return false;
-    // }
+    if (supportedLanguage !== Language.PJSON) {
+      return false;
+    }
     const scores = this.advisorService.getScoresResult();
     if (scores?.length) {
       console.log('__SCORES_DISPOSABLE__', this.advisorService.getScoresResult());
