@@ -49,18 +49,13 @@ export class AdvisorScoreDisposable implements Disposable {
     }
     const scores = this.advisorService.getScoresResult();
     if (scores?.length) {
-      console.log('__SCORES_DISPOSABLE__', this.advisorService.getScoresResult());
       if (supportedLanguage) {
         const modules = getModules(fileName, document.getText(), supportedLanguage).filter(isValidModuleName);
-        console.log('__MODULES__', modules);
         const promises = modules
           .map(module => this.vulnerabilityCountProvider.getVulnerabilityCount(module, supportedLanguage))
           .map(promise => promise.then(module => module));
-        // const testedModules = await Promise.all(promises);
         Promise.all(promises).then(
           testedModules => {
-            console.log('__TESTED__', testedModules);
-            // this.vulnsLineDecorations.set(vulnerabilityCount.name, vulnerabilityCount.line);
             const vulnsLineDecorations: Map<string, number> = new Map<string, number>();
             testedModules.forEach(vulnerabilityCount => {
               vulnsLineDecorations.set(vulnerabilityCount.name, vulnerabilityCount.line || -1);
@@ -68,7 +63,7 @@ export class AdvisorScoreDisposable implements Disposable {
             this.editorDecorator.addScoresDecorations(fileName, scores, vulnsLineDecorations);
           },
           err => {
-            console.log('__ERROR__', err);
+            console.log('Failed to get modules for advisor score', err);
           },
         );
       }
