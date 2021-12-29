@@ -1,12 +1,9 @@
 import * as vscode from 'vscode';
 import { Hover } from 'vscode';
+import { getRenderOptions, updateDecorations } from '../../common/vscode/editorDecorator';
 import { IVSCodeLanguages } from '../../common/vscode/languages';
 import { IThemeColorAdapter } from '../../common/vscode/theme';
-import {
-  DecorationOptions,
-  TextEditorDecorationType,
-  ThemableDecorationInstanceRenderOptions,
-} from '../../common/vscode/types';
+import { DecorationOptions, TextEditorDecorationType } from '../../common/vscode/types';
 import { IVSCodeWindow } from '../../common/vscode/window';
 import { AdvisorScore } from '../AdvisorTypes';
 
@@ -15,7 +12,6 @@ const SCORE_PREFIX = 'Advisor Score';
 
 export default class EditorDecorator {
   private readonly decorationType: TextEditorDecorationType;
-  private readonly fileDecorationMap: Map<string, LineDecorations>;
   private readonly vulnsLineDecorations: Map<string, number>;
   private readonly editorLastCharacterIndex = Number.MAX_SAFE_INTEGER;
 
@@ -24,8 +20,6 @@ export default class EditorDecorator {
     private readonly languages: IVSCodeLanguages,
     private readonly themeColorAdapter: IThemeColorAdapter,
   ) {
-    this.fileDecorationMap = new Map<string, LineDecorations>();
-    // TODO: common
     this.decorationType = this.window.createTextEditorDecorationType({
       after: { margin: '0 0 0 1rem' },
     });
@@ -49,12 +43,15 @@ export default class EditorDecorator {
               line - 1,
               this.editorLastCharacterIndex,
             ),
-            renderOptions: this.getRenderOptions(`| ${SCORE_PREFIX} ${Math.round(score.score * 100)}/100`),
+            renderOptions: getRenderOptions(
+              `| ${SCORE_PREFIX} ${Math.round(score.score * 100)}/100`,
+              this.themeColorAdapter,
+            ),
             hoverMessage: this.getHoverMessage(score)?.contents,
           };
         }
       }
-      this.updateDecorations(filePath, decorations);
+      updateDecorations(this.window, filePath, decorations, this.decorationType);
     }
   }
 
@@ -73,35 +70,5 @@ export default class EditorDecorator {
     hoverMessageMarkdown.appendMarkdown(`[More Details](http://snyk.io/advisor/npm-package/${score.name})`);
 
     return hoverMessage;
-  }
-
-  // TODO: move to common
-  updateDecorations(filePath: string, decorations?: LineDecorations): void {
-    const visibleEditors = this.window.getVisibleTextEditors().filter(editor => editor.document.fileName === filePath);
-
-    for (const editor of visibleEditors) {
-      decorations = decorations || this.fileDecorationMap.get(filePath);
-
-      if (decorations && decorations.length) {
-        editor.setDecorations(
-          this.decorationType,
-          decorations.filter(d => !!d),
-        );
-      }
-    }
-  }
-
-  // TODO: move to common
-  private getRenderOptions(contentText: string): ThemableDecorationInstanceRenderOptions {
-    const color = this.themeColorAdapter.create('descriptionForeground');
-    const fontWeight = 'normal';
-
-    return {
-      after: {
-        contentText,
-        color,
-        fontWeight,
-      },
-    };
   }
 }

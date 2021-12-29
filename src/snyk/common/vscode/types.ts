@@ -49,3 +49,4 @@ export type ImportedModule = {
   string: string;
   version?: string;
 };
+export type LineDecorations = DecorationOptions[];
