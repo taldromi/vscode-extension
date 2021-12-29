@@ -72,6 +72,7 @@ export class Configuration implements IConfiguration {
   private readonly defaultSnykCodeBaseURL = 'https://deeproxy.snyk.io';
   private readonly defaultAuthHost = 'https://snyk.io';
   private readonly defaultOssApiEndpoint = `${this.defaultAuthHost}/api/v1`;
+  private readonly defaultBaseApiHost = 'https://api.snyk.io';
 
   constructor(private processEnv: NodeJS.ProcessEnv = process.env, private workspace: IVSCodeWorkspace) {}
 
@@ -148,6 +149,10 @@ export class Configuration implements IConfiguration {
 
   get source(): string {
     return this.processEnv.GITPOD_WORKSPACE_ID ? 'gitpod' : IDE_NAME_SHORT;
+  }
+
+  get baseApiUrl(): string {
+    return this.defaultBaseApiHost;
   }
 
   getFeaturesConfiguration(): FeaturesConfiguration | undefined {

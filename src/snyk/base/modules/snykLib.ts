@@ -9,6 +9,7 @@ import { SNYK_CONTEXT } from '../../common/constants/views';
 import { ExperimentKey } from '../../common/experiment/services/experimentService';
 import { Logger } from '../../common/logger/logger';
 import { errorsLogs } from '../../common/messages/errorsServerLogMessages';
+import { OssResult } from '../../snykOss/ossResult';
 import { ISnykLib } from './interfaces';
 import ReportModule from './reportModule';
 
@@ -148,7 +149,9 @@ export default class SnykLib extends ReportModule implements ISnykLib {
 
     try {
       const oldResult = this.ossService.getResult();
-      const result = await this.ossService.test(manual, reportTriggeredEvent);
+      const result: OssResult = await this.ossService.test(manual, reportTriggeredEvent);
+      await this.advisorService?.setScores(result);
+
       if (result instanceof CliError) {
         return;
       }

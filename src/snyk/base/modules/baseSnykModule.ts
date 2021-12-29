@@ -1,3 +1,5 @@
+import { AdvisorScoreDisposable } from '../../advisor/services/AdvisorDisposable';
+import AdvisorService from '../../advisor/services/AdvisorService';
 import { CliDownloadService } from '../../cli/services/cliDownloadService';
 import { IAnalytics } from '../../common/analytics/itly';
 import { ISnykApiClient, SnykApiClient } from '../../common/api/apiСlient';
@@ -35,9 +37,11 @@ export default abstract class BaseSnykModule implements IBaseSnykModule {
   protected authService: IAuthenticationService;
   protected cliDownloadService: CliDownloadService;
   protected ossService?: OssService;
+  protected advisorService?: AdvisorService;
   protected commandController: CommandController;
   protected scanModeService: ScanModeService;
   protected ossVulnerabilityCountService: OssVulnerabilityCountService;
+  protected advisorScoreDisposable: AdvisorScoreDisposable;
 
   protected notificationService: INotificationService;
   protected analytics: IAnalytics;

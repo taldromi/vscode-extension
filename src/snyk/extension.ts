@@ -1,4 +1,6 @@
 import * as vscode from 'vscode';
+import { AdvisorScoreDisposable } from './advisor/services/AdvisorDisposable';
+import AdvisorService from './advisor/services/AdvisorService';
 import { IExtension } from './base/modules/interfaces';
 import SnykLib from './base/modules/snykLib';
 import { AuthenticationService } from './base/services/authenticationService';
@@ -95,6 +97,8 @@ class SnykExtension extends SnykLib implements IExtension {
       this.analytics,
       new VSCodeLanguages(),
     );
+
+    this.advisorService = new AdvisorService();
 
     this.cliDownloadService = new CliDownloadService(this.context, new StaticCliApi(), vsCodeWindow, Logger);
     this.ossService = new OssService(
@@ -220,6 +224,14 @@ class SnykExtension extends SnykLib implements IExtension {
       this.analytics,
     );
     this.ossVulnerabilityCountService.activate();
+
+    this.advisorScoreDisposable = new AdvisorScoreDisposable(
+      vsCodeWindow,
+      vsCodeLanguages,
+      this.advisorService,
+      new ModuleVulnerabilityCountProvider(this.ossService, npmModuleInfoFetchService),
+    );
+    this.advisorScoreDisposable.activate();
 
     // Actually start analysis
     this.runScan();
