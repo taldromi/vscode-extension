@@ -13,7 +13,7 @@ import {
   TYPESCRIPT,
   TYPESCRIPT_FILE_REGEX,
   TYPESCRIPT_REACT,
-} from './languages';
+} from './languageConsts';
 import nativeModules from './nativeModules';
 import { ImportedModule, Language } from './types';
 
