@@ -98,7 +98,7 @@ class SnykExtension extends SnykLib implements IExtension {
       new VSCodeLanguages(),
     );
 
-    this.advisorService = new AdvisorService();
+    this.advisorService = new AdvisorService(this.snykApiClient);
 
     this.cliDownloadService = new CliDownloadService(this.context, new StaticCliApi(), vsCodeWindow, Logger);
     this.ossService = new OssService(

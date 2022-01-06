@@ -41,6 +41,7 @@ export interface IConfiguration {
   source: string;
 
   authHost: string;
+  baseApiUrl: string;
   token: string | undefined;
   setToken(token: string): Promise<void>;
 
