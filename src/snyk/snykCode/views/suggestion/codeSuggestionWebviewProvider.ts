@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import { IExtension } from '../../../base/modules/interfaces';
+import { IConfiguration } from '../../../common/configuration/configuration';
 import {
   SNYK_IGNORE_ISSUE_COMMAND,
   SNYK_OPEN_BROWSER_COMMAND,
@@ -7,8 +8,10 @@ import {
 } from '../../../common/constants/commands';
 import { SNYK_VIEW_SUGGESTION_CODE } from '../../../common/constants/views';
 import { ErrorHandler } from '../../../common/error/errorHandler';
+import { ILog } from '../../../common/logger/interfaces';
 import { getNonce } from '../../../common/views/nonce';
 import { WebviewProvider } from '../../../common/views/webviewProvider';
+import { ExtensionContext } from '../../../common/vscode/extensionContext';
 import { WEBVIEW_PANEL_QUALITY_TITLE, WEBVIEW_PANEL_SECURITY_TITLE } from '../../constants/analysis';
 import { completeFileSuggestionType } from '../../interfaces';
 import { messages as errorMessages } from '../../messages/error';
@@ -20,6 +23,14 @@ export class CodeSuggestionWebviewProvider extends WebviewProvider implements IC
   // For consistency reasons, the single source of truth for the current suggestion is the
   // panel state. The following field is only used in
   private suggestion: completeFileSuggestionType | undefined;
+
+  constructor(
+    private configuration: IConfiguration,
+    protected readonly context: ExtensionContext,
+    protected readonly logger: ILog,
+  ) {
+    super(context, logger);
+  }
 
   activate(extension: IExtension): void {
     this.extension = extension;
@@ -180,7 +191,9 @@ export class CodeSuggestionWebviewProvider extends WebviewProvider implements IC
   <head>
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource}; img-src ${webview.cspSource} https:; script-src 'nonce-${nonce}';">
+      <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource}; img-src ${
+      webview.cspSource
+    } https:; script-src 'nonce-${nonce}';">
 
       <link href="${styleUri}" rel="stylesheet">
       <link href="${styleVSCodeUri}" rel="stylesheet">
@@ -200,7 +213,9 @@ export class CodeSuggestionWebviewProvider extends WebviewProvider implements IC
           <div id="title" class="suggestion-text"></div>
           <div class="suggestion-links">
             <div id="navigateToIssue" class="clickable">
-              <img class="icon" src="${images['icon-lines']}" /> This <span class="issue-type">issue</span> happens on line <span id="line-position"></span>
+              <img class="icon" src="${
+                images['icon-lines']
+              }" /> This <span class="issue-type">issue</span> happens on line <span id="line-position"></span>
             </div>
             <div id="lead-url" class="clickable hidden">
               <img class="icon" src="${images['icon-external']}" /> More info
@@ -227,12 +242,17 @@ export class CodeSuggestionWebviewProvider extends WebviewProvider implements IC
           </div>
           <div id="example"></div>
         </section>
-        <section class="feedback-section delimiter-top">
-          <div id="ignore-section">
-            <div id="ignore-top">Do you want to hide this suggestion from the results?</div>
-            <div class="ignore-actions row">
+        <section class="report-fp delimiter-top">
+          <div id="actions-section">
+            <div class="actions row">
               <button id="ignore-line-issue" class="button">Ignore on line <span id="line-position2"></span></button>
               <button id="ignore-file-issue" class="button">Ignore in this file</button>
+
+              <div class="report-fp-actions">
+                <button id="report-fp" class="button" ${
+                  this.configuration.getPreviewFeatures().reportFalsePositives ? '' : 'style="display: none;"'
+                }>Report as false positive</button>
+              </div>
             </div>
           </div>
           <!--
